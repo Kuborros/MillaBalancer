@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using UnityEngine;
 
 namespace MillaBalancer
 {
@@ -25,7 +26,11 @@ namespace MillaBalancer
         [HarmonyPatch(typeof(MillaCube), nameof(MillaCube.ObjectCreated), MethodType.Normal)]
         static void Postfix(ref float ___explodeTimer)
         {
-            ___explodeTimer = Plugin.configRange.Value;
+            //FileLog.Log("Who is milla now? " + GameObject.Find("Player 1").GetComponent<FPPlayer>().characterID.ToString());
+            if (GameObject.Find("Player 1").GetComponent<FPPlayer>().characterID.ToString() == "MILLA")
+            {
+                ___explodeTimer = Plugin.configRange.Value;
+            }
         }
     }
 }
