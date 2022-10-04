@@ -14,9 +14,13 @@ namespace MillaBalancer
         {
             configRange = Config.Bind("General", "Range",(float) -50.0, "Set Milla's cube/projectile range. Value must be negative float. 0 = No range, -100 = Wraps whole screen vertically twice.");
 
-            //HarmonyFileLog.Enabled = true;
-            var harmony = new Harmony("com.kuborro.plugins.fp2.millabal");
-            harmony.PatchAll(typeof(Patch));
+            if (configRange.Value > (float) 0.0)
+            {
+                configRange.Value = (float) -50.0;
+            }
+                //HarmonyFileLog.Enabled = true;
+                var harmony = new Harmony("com.kuborro.plugins.fp2.millabal");
+                harmony.PatchAll(typeof(Patch));
         }
     }
 
