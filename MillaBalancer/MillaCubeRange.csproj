@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net35</TargetFramework>
-    <AssemblyName>MillaBalancer</AssemblyName>
-    <Description>Milla Balancer Mod</Description>
+    <AssemblyName>MillaCube</AssemblyName>
+    <Description>Milla cube range Mod</Description>
     <Version>1.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
