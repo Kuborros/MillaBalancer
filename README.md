@@ -1,8 +1,9 @@
 # MillaCubeRangeMod
 
 Mod which allows you to increase (or lower) the range of Milla's projectile and cube attack.
-
-Value can be set in the config file, generated on the first run in BepInEx/config
+By default the range is set to effectively infinite. Setting values higher than -50 might have unintended effects.
+Values can be only negative - the lower the number, the further cube will fly.
+Value can be set in the config file, generated on the first run in BepInEx/config.
 
 Install:
 
