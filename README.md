@@ -14,3 +14,7 @@ Extract the downloaded zip file in to the main game directory.
 ## Installation:
 To install the mod extract the downloaded zip file contents from the releases tab into the main game directory.  
 If asked, agree to merge the BepInEx folders.  
+
+## Building:
+Follow the BepinEx guide for setting up Visual Studio found [here](https://docs.bepinex.dev/master/index.html).  
+Open the solution in Visual Studio and build the project.
