@@ -1,4 +1,4 @@
-# MillaCubeRangeMod
+# MillaCubeMod 1.0
 
 A mod for the game [Freedom Planet 2](https://freedomplanet2.com/) which allows you to increase (or lower) the range of Milla's projectile and cube attack.  
 By default the range is set to effectively infinite. Setting values higher than -50 might have unintended effects.  
