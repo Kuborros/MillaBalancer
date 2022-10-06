@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace MillaBalancer
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.millacube", "Milla cube range editor", "1.1.0")]
+    [BepInPlugin("com.kuborro.plugins.fp2.millacube", "MillaCubeEditor", "1.1.0")]
     [BepInProcess("FP2.exe")]
     public class Plugin : BaseUnityPlugin
     {
