@@ -25,6 +25,7 @@ namespace MillaBalancer
                 var harmony = new Harmony("com.kuborro.plugins.fp2.millacube");
                 harmony.PatchAll(typeof(Patch));
                 harmony.PatchAll(typeof(Patch2));
+                harmony.PatchAll(typeof(Patch3));
         }
     }
 
@@ -47,6 +48,17 @@ class Patch2
 {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_MillaCubeSpawn), MethodType.Normal)]
+    static void Postfix(ref float ___millaCubeEnergy)
+    {
+        {
+            ___millaCubeEnergy = Plugin.configProjectiles.Value;
+        }
+    }
+}
+
+class Patch3
+{
+    [HarmonyPostfix]
     [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_MillaMultiCube), MethodType.Normal)]
     static void Postfix(ref float ___millaCubeEnergy)
     {
