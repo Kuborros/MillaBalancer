@@ -1,7 +1,7 @@
 # MillaCubeMod 1.1
 
 A mod for the game [Freedom Planet 2](https://freedomplanet2.com/) which allows you to increase (or lower) the range of Milla's projectile and cube attack as well as increasing (or limiting) the number of cubes that are spawned.  
-By default the range is set to effectively infinite and we spawn 10 cubes. Setting values higher than -50 for the range might have **unintended effects**.  
+By default the range is set to effectively infinite and we spawn 10 cubes. Setting values higher than -50 for the range might have **unintended effects**. Setting the cubes number over 30 will fill out the cube entity limit and **break the game**.  
 
 For the range the values can be only negative - the lower the number, the further cube will fly.  
 For the cubes the number **must be** positive.  
