@@ -8,7 +8,7 @@ using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace MillaBalancer
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.millacube", "MillaCubeEditor", "1.1.0")]
+    [BepInPlugin("com.kuborro.plugins.fp2.millacube", "MillaCubeEditor", "1.2.0")]
     [BepInProcess("FP2.exe")]
     public class Plugin : BaseUnityPlugin
     {
@@ -18,15 +18,11 @@ namespace MillaBalancer
         public static ConfigEntry<bool> configAlwaysSpawn;
         private void Awake()
         {
-            configRange = Config.Bind("General", "Range",(float) -50.0, "Set Milla's cube/projectile range. Value must be negative float. 0 = No range, -10 = Default, -50 = Basically infinite.");
+            configRange = Config.Bind("General", "Range",(float) 50.0, new ConfigDescription("Set Milla's cube/projectile range. Value must be negative float. 0 = No range, 10 = Default, 50 = Basically infinite.", new AcceptableValueRange<float>(0f, 100f)));
             configProjectiles = Config.Bind("General", "Cubes fired per cube", (float) 500.0, "Set how many cubes can Milla fire per one follower cube . Value must be a positive float. 0 = No cubes, 100 = Default, 500 = 5x the shots.");
-            configCubes = Config.Bind("General", "Extra cubes spawned", 10, "Set how many cubes the cube powerup and guard (if enabled below) will spawn. 0 and negative values are not allowed.");
+            configCubes = Config.Bind("General", "Extra cubes spawned", 10, new ConfigDescription("Set how many cubes the cube powerup and guard (if enabled below) will spawn. 0 and negative values are not allowed.", new AcceptableValueRange<int>(1,30)));
             configAlwaysSpawn = Config.Bind("General", "Spawn extra cubes on guard", true, "Set if you want all the extra cubes to be spawned on guard.");
 
-            if (configRange.Value > (float) 0.0)
-            {
-                configRange.Value = (float) -50.0;
-            }
             if (configCubes.Value <= 0) configCubes.Value = 1;
 
                 //HarmonyFileLog.Enabled = true;
