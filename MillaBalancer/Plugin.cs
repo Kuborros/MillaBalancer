@@ -4,44 +4,45 @@ using HarmonyLib;
 using MillaBalancer;
 using System.Collections.Generic;
 using UnityEngine;
-using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace MillaBalancer
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.millacube", "MillaCubeEditor", "1.2.0")]
+    [BepInPlugin("com.kuborro.plugins.fp2.millacube", "MillaCubeEditor", "2.0.0")]
     [BepInProcess("FP2.exe")]
     public class Plugin : BaseUnityPlugin
     {
         public static ConfigEntry<float> configRange;
-        public static ConfigEntry<float> configProjectiles;
+        //public static ConfigEntry<float> configProjectiles;
         public static ConfigEntry<int> configCubes;
         public static ConfigEntry<bool> configAlwaysSpawn;
+
+
         private void Awake()
         {
             configRange = Config.Bind("General", "Range",(float) 50.0, new ConfigDescription("Set Milla's cube/projectile range. Value must be negative float. 0 = No range, 10 = Default, 50 = Basically infinite.", new AcceptableValueRange<float>(0f, 100f)));
-            configProjectiles = Config.Bind("General", "Cubes fired per cube", (float) 500.0, "Set how many cubes can Milla fire per one follower cube . Value must be a positive float. 0 = No cubes, 100 = Default, 500 = 5x the shots.");
+            //configProjectiles = Config.Bind("General", "Cubes fired per cube", (float) 500.0, "Set how many cubes can Milla fire per one follower cube . Value must be a positive float. 0 = No cubes, 100 = Default, 500 = 5x the shots.");
             configCubes = Config.Bind("General", "Extra cubes spawned", 10, new ConfigDescription("Set how many cubes the cube powerup and guard (if enabled below) will spawn. 0 and negative values are not allowed.", new AcceptableValueRange<int>(1,30)));
             configAlwaysSpawn = Config.Bind("General", "Spawn extra cubes on guard", true, "Set if you want all the extra cubes to be spawned on guard.");
 
             if (configCubes.Value <= 0) configCubes.Value = 1;
 
-                //HarmonyFileLog.Enabled = true;
-                var harmony = new Harmony("com.kuborro.plugins.fp2.millacube");
-                harmony.PatchAll(typeof(Patch));
-                harmony.PatchAll(typeof(Patch2));
-                harmony.PatchAll(typeof(Patch3));
-                harmony.PatchAll(typeof(Patch4));
+            //HarmonyFileLog.Enabled = true;
+            var harmony = new Harmony("com.kuborro.plugins.fp2.millacube");
+            harmony.PatchAll(typeof(PatchObjectCreated));
+            harmony.PatchAll(typeof(PatchPlayerStart));
+            harmony.PatchAll(typeof(PatchCubeSpawn));
+            harmony.PatchAll(typeof(PatchAddCube));
+            harmony.PatchAll(typeof(PatchCubeSpawn));
         }
     }
 
-    class Patch
-    {
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(MillaCube), nameof(MillaCube.ObjectCreated), MethodType.Normal)]
-        static void Postfix(ref float ___explodeTimer)
-        {
-            //FileLog.Log("Who is milla now? " + GameObject.Find("Player 1").GetComponent<FPPlayer>().characterID.ToString());
-            if (GameObject.Find("Player 1").GetComponent<FPPlayer>().characterID.ToString() == "MILLA")
+class PatchObjectCreated
+{
+     [HarmonyPostfix]
+     [HarmonyPatch(typeof(MillaCube), "ObjectCreated", MethodType.Normal)]
+     static void Postfix(ref float ___explodeTimer)
+     {
+        if (FPSaveManager.character == FPCharacterID.MILLA)
             {
                 ___explodeTimer = Plugin.configRange.Value;
             }
@@ -49,55 +50,76 @@ namespace MillaBalancer
     }
 }
 
-class Patch2
+class PatchPlayerStart
 {
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_MillaCubeSpawn), MethodType.Normal)]
-    static void Postfix(ref float ___millaCubeEnergy, FPPlayer __instance)
+    [HarmonyPatch(typeof(FPPlayer), "Start", MethodType.Normal)]
+    static void Postfix(ref List<MillaMasterCube> ___millaCubes)
     {
-        {
-            ___millaCubeEnergy = Plugin.configProjectiles.Value;
-            if (Plugin.configAlwaysSpawn.Value)
-            {
-                __instance.Action_MillaMultiCube();
-            }
-        }
+            ___millaCubes = new List<MillaMasterCube>(Plugin.configCubes.Value);
     }
 }
 
-class Patch3
+class PatchCubeSpawn
 {
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_MillaMultiCube), MethodType.Normal)]
-    static void Postfix(ref float ___millaCubeEnergy)
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(FPPlayer), "Action_MillaCubeSpawn", MethodType.Normal)]
+    static bool Prefix(FPPlayer __instance, ref List<MillaMasterCube> ___millaCubes)
     {
+        int i = 0;
+        int num = ___millaCubes.Count;
+        while (i < num)
         {
-            ___millaCubeEnergy = Plugin.configProjectiles.Value;
+            __instance.RemoveMillaCubeAt(num - i - 1);
+            i++;
         }
+        num = Mathf.Min(num + Plugin.configCubes.Value, Plugin.configCubes.Value);
+        for (i = 0; i < num; i++)
+        {
+            MillaMasterCube millaMasterCube = (MillaMasterCube)FPStage.CreateStageObject(MillaMasterCube.classID, __instance.position.x, __instance.position.y);
+            millaMasterCube.SetEnergyFull();
+            millaMasterCube.floatStep = (float)i * -30f;
+            __instance.AddMillaCube(millaMasterCube);
+        }
+        __instance.Action_PlaySoundUninterruptable(__instance.sfxMillaCubeSpawn);
+
+        return false;
     }
 }
 
-public static class Patch4
+class PatchMultiCube
 {
-    [HarmonyTranspiler]
-    [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_MillaMultiCube), MethodType.Normal)]
-    static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(FPPlayer), "Action_MillaMultiCube", MethodType.Normal)]
+    static void Postfix(FPPlayer __instance)
     {
-        List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
-        for (var i = 0; i < codes.Count; i++)            
+        if (Plugin.configAlwaysSpawn.Value)
+            __instance.Action_MillaMultiCube();
+    }
+}
+
+class PatchAddCube
+{
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(FPPlayer), "AddMillaCube", MethodType.Normal)]
+    static void Postfix(MillaMasterCube cube, ref bool __result, List<MillaMasterCube> ___millaCubes, FPPlayer __instance)
+    {
+        if (___millaCubes.Contains(cube))
         {
-            if (codes[i].opcode.Name == "ldc.i4.3")
-            {
-                codes[i].opcode = OpCodes.Ldc_I4_S;
-                codes[i].operand = Plugin.configCubes.Value;           
-            }
-            if (codes[i].opcode.Name == "ldc.i4.6")
-            {
-                codes[i].opcode = OpCodes.Ldc_I4_S;
-                codes[i].operand = Plugin.configCubes.Value;
-                break;
-            }
+            __result = false;
+            return;
         }
-        return codes;
+        if (cube == null)
+        {
+            __result = false;
+            return;
+        }
+        if (___millaCubes.Count <= Plugin.configCubes.Value)
+        {
+            cube.parentObject = __instance;
+            ___millaCubes.Add(cube);
+            __instance.ReindexMillaCubes(true, true);
+            __result = true;
+        }
     }
 }
