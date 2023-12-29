@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace MillaBalancer
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.millacube", "MillaCubeEditor", "2.0.0")]
+    [BepInPlugin("com.kuborro.plugins.fp2.millacube", "MillaCubeEditor", "2.0.1")]
     [BepInProcess("FP2.exe")]
     public class Plugin : BaseUnityPlugin
     {
@@ -32,7 +32,7 @@ namespace MillaBalancer
             harmony.PatchAll(typeof(PatchPlayerStart));
             harmony.PatchAll(typeof(PatchCubeSpawn));
             harmony.PatchAll(typeof(PatchAddCube));
-            harmony.PatchAll(typeof(PatchCubeSpawn));
+            harmony.PatchAll(typeof(PatchMultiCube));
         }
     }
 
@@ -60,10 +60,10 @@ class PatchPlayerStart
     }
 }
 
-class PatchCubeSpawn
+class PatchMultiCube
 {
     [HarmonyPrefix]
-    [HarmonyPatch(typeof(FPPlayer), "Action_MillaCubeSpawn", MethodType.Normal)]
+    [HarmonyPatch(typeof(FPPlayer), "Action_MillaMultiCube", MethodType.Normal)]
     static bool Prefix(FPPlayer __instance, ref List<MillaMasterCube> ___millaCubes)
     {
         int i = 0;
@@ -87,10 +87,10 @@ class PatchCubeSpawn
     }
 }
 
-class PatchMultiCube
+class PatchCubeSpawn
 {
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(FPPlayer), "Action_MillaMultiCube", MethodType.Normal)]
+    [HarmonyPatch(typeof(FPPlayer), "Action_MillaCubeSpawn", MethodType.Normal)]
     static void Postfix(FPPlayer __instance)
     {
         if (Plugin.configAlwaysSpawn.Value)
